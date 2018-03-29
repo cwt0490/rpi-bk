@@ -4,9 +4,7 @@
 sudo apt-get -y install rsync dosfstools parted kpartx exfat-fuse
 
 #mount USB device
-usbmount=/mnt/rpi-bk
-mkdir -p $usbmount
-
+usbmount=/mnt
 
 
 img=$usbmount/rpi-`date +%Y%m%d-%H%M`.img
@@ -18,7 +16,7 @@ echo ===================== part 1, create a new blank img ======================
 #sudo rm $img
 bootsz=`df -P | grep /boot | awk '{print $2}'`
 rootsz=`df -P | grep /dev/root | awk '{print $3}'`
-totalsz=`echo $bootsz $rootsz | awk '{print int(($1+$2)*1.3)}'`
+totalsz=`echo $bootsz $rootsz | awk '{print int(($1+$2)*1.5)}'`
 sudo dd if=/dev/zero of=$img bs=1K count=$totalsz
 
 # format virtual disk
@@ -56,18 +54,18 @@ if [ -f /etc/dphys-swapfile ]; then
 	fi
 	EXCLUDE_SWAPFILE="--exclude $SWAPFILE"
 fi
-sudo rsync --force -rltWDEgop --delete --stats --progress \
+sudo  rsync --force -rltWDEgop --delete --stats --progress \
 	$EXCLUDE_SWAPFILE \
 	--exclude '.gvfs' \
-	--exclude '/dev' \
-        --exclude '/media' \
-	--exclude '/mnt' \
-	--exclude '/proc' \
-        --exclude '/run' \
-	--exclude '/sys' \
-	--exclude '/tmp' \
-        --exclude 'lost\+found' \
-	--exclude '$usbmount' \
+	--exclude '/dev/*' \
+        --exclude '/media/*' \
+	--exclude '/mnt/*' \
+	--exclude '/proc/*' \
+        --exclude '/run/*' \
+	--exclude '/sys/*' \
+	--exclude '/tmp/*' \
+        --exclude 'lost\+found/*' \
+	--exclude '$usbmount/*' \
 	// $mountr
 # special dirs 
 for i in dev media mnt proc run sys boot; do
@@ -108,6 +106,6 @@ sudo umount $mountr
 # umount loop device
 sudo kpartx -d $loopdevice
 sudo losetup -d $loopdevice
-#sudo umount $usbmount
 rm -rf $mountb $mountr
-echo "==== All done. You can copy the backup file"
+echo "==== All done. You can un-plug the backup device"
+
